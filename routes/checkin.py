@@ -3,6 +3,7 @@ from flask import Blueprint, request, jsonify
 from extensions import get_db_connection
 import requests
 import os
+import base64
 from datetime import datetime
 from flask import current_app
 from werkzeug.utils import secure_filename
@@ -16,13 +17,14 @@ checkin_bp = Blueprint('checkin', __name__)
 
 @checkin_bp.route('/checkin', methods=['POST'])
 def checkin():
-    code_payment = request.form.get('code_payment')
-    link_webhook = request.form.get('link_webhook')
-    day = request.form.get('day')
-    image_url = request.form.get('image_url')
-    name = request.form.get('name')
-    job = request.form.get('job_title')
-    company = request.form.get('company')
+    data = request.get_json()
+    code_payment = data.get('code_payment')
+    link_webhook = data.get('link_webhook')
+    day = data.get('day')
+    name = data.get('name')
+    job = data.get('job_title')
+    company = data.get('company')
+    image = data.get('image')
     if not code_payment or not link_webhook or not day:
         return jsonify({"status": 0, "message": "code_payment, link_webhook, and day are required", "data": None}), 400
 
@@ -74,7 +76,14 @@ def checkin():
             # If parsing fails or date is outside expected range, do not update any checkin_day
             pass
 
-        filename = os.path.basename(image_url) if image_url else None
+        filename = None
+        if image:
+            filename = f"{code_payment}_{int(datetime.utcnow().timestamp())}.jpg"
+            upload_folder = current_app.config['UPLOAD_FOLDER']
+            os.makedirs(upload_folder, exist_ok=True)
+            image_path = os.path.join(upload_folder, filename)
+            with open(image_path, "wb") as f:
+                f.write(base64.b64decode(image))
 
         # Determine which date_day column to update
         date_col = None
@@ -104,7 +113,9 @@ def checkin():
 
         # Include full image URL in response if image exists
         if filename:
-            payload['image_url'] = image_url
+            base_url = request.url_root.rstrip('/')
+            upload_folder = current_app.config['UPLOAD_FOLDER'].strip('/')
+            payload['image_url'] = f"{base_url}/{upload_folder}/{filename}"
 
         # Send simplified payload to the webhook URL asynchronously
         webhook_payload = {
