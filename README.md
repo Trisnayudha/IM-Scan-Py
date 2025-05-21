@@ -85,7 +85,7 @@ Form-data parameters:
 Request JSON body:
 
 - `code_payment`: string (required)
-- `day`: string, ISO format (`YYYY-MM-DD`) or Indonesian format (e.g. `2025 juni tanggal 10`) (required)
+- `day`: string, ISO format (`YYYY-MM-DD`) atau Indonesian format (e.g. `2025 juni tanggal 10`) (required)
 
 ```json
 {
@@ -115,7 +115,7 @@ Request JSON body:
 
 `POST /checkin`
 
-Form-data parameters:
+JSON body:
 
 - `code_payment`: string (required)
 - `link_webhook`: URL string (required)
@@ -123,7 +123,21 @@ Form-data parameters:
 - `name`: string (required)
 - `job_title`: string (required)
 - `company`: string (required)
-- `image_url`: string (optional)
+- `image`: base64-encoded string (required)
+
+**Raw JSON Body Example:**
+
+```json
+{
+  "code_payment": "EX123456",
+  "link_webhook": "https://yourdomain.com/webhook",
+  "day": "2025-06-10",
+  "name": "Winter Humphrey",
+  "job_title": "Director",
+  "company": "Fletcher Traders",
+  "image": "/9j/4AAQSkZJRgABAQAAAQABAAD... (base64 string)"
+}
+```
 
 **Response:**
 
