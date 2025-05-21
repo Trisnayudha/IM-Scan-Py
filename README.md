@@ -42,6 +42,7 @@ class Config:
 ## 🚀 Run App
 
 ```bash
+source venv/bin/activate
 python app.py
 ```
 
@@ -118,8 +119,11 @@ Form-data parameters:
 
 - `code_payment`: string (required)
 - `link_webhook`: URL string (required)
-- `day`: string, ISO format (`YYYY-MM-DD`) or Indonesian format (`2025 juni tanggal 10`) (required)
-- `image`: file upload (optional)
+- `day`: string, ISO format (`YYYY-MM-DD`) atau format Indonesia (`2025 juni tanggal 10`) (required)
+- `name`: string (required)
+- `job_title`: string (required)
+- `company`: string (required)
+- `image_url`: string (optional)
 
 **Response:**
 
@@ -129,10 +133,12 @@ Form-data parameters:
   "message": "Check-in berhasil",
   "data": {
     "name": "Winter Humphrey",
-    "company_name": "Fletcher Traders",
+    "company": "Fletcher Traders",
     "job_title": "Director",
     "code_payment": "EX123456",
-    "day": "2025-06-10"
+    "day": "2025-06-10",
+    "ticket_type": "Delegate Pass",
+    "ticket_color": "#1428DF"
   }
 }
 ```
@@ -181,5 +187,7 @@ Query parameters:
 ---
 
 Happy check-in! 🎟️
+
 # IM-Scan
+
 # IM-Scan

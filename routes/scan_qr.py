@@ -54,7 +54,7 @@ def scan_qr():
         conn.close()
         if row:
             name, job_title, company, title, type_val = row
-            ticket_type = map_ticket_type(type_val, title)
+            ticket_label, ticket_color = map_ticket_type(type_val, title)
             return jsonify({
                 "status": 1,
                 "message": "Scan QR successful",
@@ -64,7 +64,8 @@ def scan_qr():
                     "company": company,
                     "code_payment": code_payment,
                     "checkin_field": col,
-                    "ticket_type": ticket_type
+                    "ticket_type": ticket_label,
+                    "ticket_color": ticket_color
                 }
             })
         else:

@@ -19,7 +19,10 @@ def checkin():
     code_payment = request.form.get('code_payment')
     link_webhook = request.form.get('link_webhook')
     day = request.form.get('day')
-    image_file = request.files.get('image')
+    image_url = request.form.get('image_url')
+    name = request.form.get('name')
+    job = request.form.get('job_title')
+    company = request.form.get('company')
     if not code_payment or not link_webhook or not day:
         return jsonify({"status": 0, "message": "code_payment, link_webhook, and day are required", "data": None}), 400
 
@@ -27,9 +30,8 @@ def checkin():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT u.name, u.company_name, u.job_title, p.id, ud.id
+            SELECT p.id, ud.id
             FROM payment p
-            JOIN users u ON u.id = p.users_id
             JOIN users_delegate ud ON ud.users_id = p.users_id AND ud.events_id = p.events_id
             WHERE p.code_payment = %s AND p.aproval_quota_users = 1
         """, (code_payment,))
@@ -38,7 +40,7 @@ def checkin():
         if not result:
             return jsonify({"status": 0, "message": "QR Code tidak valid", "data": None})
 
-        name, company, job, payment_id, delegate_id = result
+        payment_id, delegate_id = result
 
         # Determine which checkin_day column based on the provided day
         try:
@@ -72,20 +74,7 @@ def checkin():
             # If parsing fails or date is outside expected range, do not update any checkin_day
             pass
 
-        # Save image URL and set date for the correct checkin day in users_delegate
-        filename = None
-        if image_file:
-            filename = f"{code_payment}_{int(datetime.utcnow().timestamp())}.jpg"
-            # Ensure upload folder exists
-            upload_folder = current_app.config['UPLOAD_FOLDER']
-            os.makedirs(upload_folder, exist_ok=True)
-            path = os.path.join(upload_folder, filename)
-            # Compress and save image locally
-            image = Image.open(image_file.stream)
-            image = image.convert("RGB")
-            image.save(path, format="JPEG", quality=75, optimize=True)
-            # Reset stream pointer
-            image_file.stream.seek(0)
+        filename = os.path.basename(image_url) if image_url else None
 
         # Determine which date_day column to update
         date_col = None
@@ -107,7 +96,7 @@ def checkin():
 
         payload = {
             "name": name,
-            "company_name": company,
+            "company": company,
             "job_title": job,
             "code_payment": code_payment,
             "day": day
@@ -115,15 +104,13 @@ def checkin():
 
         # Include full image URL in response if image exists
         if filename:
-            base_url = request.url_root.rstrip('/')
-            upload_folder = current_app.config['UPLOAD_FOLDER'].strip('/')
-            payload['image_url'] = f"{base_url}/{upload_folder}/{filename}"
+            payload['image_url'] = image_url
 
         # Send simplified payload to the webhook URL asynchronously
         webhook_payload = {
             "name": name,
             "job_title": job,
-            "company_name": company,
+            "company": company,
             "code_payment": code_payment
         }
         def send_webhook_task(url, payload):
