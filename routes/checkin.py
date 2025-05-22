@@ -30,7 +30,7 @@ def checkin():
 
     try:
         conn = get_db_connection()
-        cur = conn.cursor()
+        cur = conn.cursor(buffered=True)
         cur.execute("""
             SELECT p.id, ud.id
             FROM payment p
