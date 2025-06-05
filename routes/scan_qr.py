@@ -55,20 +55,26 @@ def scan_qr():
             payment_id, name, job_title, company, category, title, type_val = row
             # Validate ticket category against the check-in day
             if col:
-                if dt.day == 10 and category not in ('Day 1 Access', 'All Access'):
+                # Dynamic validation: if user has a specific Day X Access ticket and tries to check in on a different day
+                if category != 'All Access':
+                    if category.startswith('Day '):
+                        try:
+                            access_day = int(category.split()[1])
+                        except ValueError:
+                            access_day = None
+                        if access_day:
+                            # Map Day 1 to June 10, Day 2 to June 11, Day 3 to June 12
+                            correct_day = 9 + access_day  # e.g., Day 2 => 11
+                            if dt.year == 2025 and dt.month == 6 and dt.day != correct_day:
+                                month_name = 'June'
+                                return jsonify({
+                                    "status": 0,
+                                    "message": f"Your ticket grants Day {access_day} Access. See you on {month_name} {correct_day} for Indonesia Miner 2025!"
+                                }), 403
+                    # If category isn't All Access or Day X, treat as invalid for any day
                     return jsonify({
                         "status": 0,
-                        "message": "Oops! Your ticket only grants Day 1 Access. You cannot check in today."
-                    }), 403
-                if dt.day == 11 and category not in ('Day 2 Access', 'All Access'):
-                    return jsonify({
-                        "status": 0,
-                        "message": "Oops! Your ticket only grants Day 2 Access. You cannot check in today."
-                    }), 403
-                if dt.day == 12 and category not in ('Day 3 Access', 'All Access'):
-                    return jsonify({
-                        "status": 0,
-                        "message": "Oops! Your ticket only grants Day 3 Access. You cannot check in today."
+                        "message": "Your ticket is not valid for check-in today."
                     }), 403
             # Fetch image associated with this payment_id
             cur.execute("SELECT image FROM users_delegate WHERE payment_id = %s", (payment_id,))
