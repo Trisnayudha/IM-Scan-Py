@@ -31,29 +31,38 @@ def scan_qr():
                 month = next(v for k,v in months.items() if k in date_str)
                 day_num = int(parts[-1])
                 dt = datetime(year, month, day_num)
-            # Map specific dates in June 2025 to check-in fields
+            # Map specific dates in June 2025 to date_day fields
             if dt.year == 2025 and dt.month == 6:
                 if dt.day == 10:
-                    col = 'checkin_day1'
+                    col = 'date_day1'
                 elif dt.day == 11:
-                    col = 'checkin_day2'
+                    col = 'date_day2'
                 elif dt.day == 12:
-                    col = 'checkin_day3'
+                    col = 'date_day3'
         except Exception:
             return jsonify({"status": 0, "message": "Invalid day format", "data": None}), 400
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT u.name, u.job_title, u.company_name, et.title, et.type
+            SELECT p.id AS payment_id, u.name, u.job_title, u.company_name, et.title, et.type
             FROM payment p
             JOIN users u ON u.id = p.users_id
             JOIN events_tickets et ON et.id = p.package_id
             WHERE p.code_payment = %s AND p.aproval_quota_users = 1
         """, (code_payment,))
         row = cur.fetchone()
-        conn.close()
         if row:
-            name, job_title, company, title, type_val = row
+            payment_id, name, job_title, company, title, type_val = row
+            # Fetch image associated with this payment_id
+            cur.execute("SELECT image FROM users_delegate WHERE payment_id = %s", (payment_id,))
+            img_row = cur.fetchone()
+            image = img_row[0] if img_row else None
+            # Update check-in timestamp for the delegate in the users_delegate table
+            if col:
+                update_query = f"UPDATE users_delegate SET {col} = NOW() WHERE payment_id = %s"
+                cur.execute(update_query, (payment_id,))
+                conn.commit()
+            conn.close()
             ticket_label, ticket_color = map_ticket_type(type_val, title)
             return jsonify({
                 "status": 1,
@@ -65,10 +74,12 @@ def scan_qr():
                     "code_payment": code_payment,
                     "checkin_field": col,
                     "ticket_type": ticket_label,
-                    "ticket_color": ticket_color
+                    "ticket_color": ticket_color,
+                    "image": image
                 }
             })
         else:
+            conn.close()
             return jsonify({"status": 0, "message": "Delegate not found", "data": None}), 404
     except Exception as e:
         return jsonify({"status": 0, "message": str(e), "data": None}), 500

@@ -5,6 +5,7 @@ from routes.scan_qr import scan_qr_bp
 from routes.check_face import check_face_bp
 from routes.checkin import checkin_bp
 from routes.list_delegate import list_delegate_bp
+from routes.ngrok import ngrok_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -14,6 +15,7 @@ app.register_blueprint(scan_qr_bp)
 app.register_blueprint(check_face_bp)
 app.register_blueprint(checkin_bp)
 app.register_blueprint(list_delegate_bp)
+app.register_blueprint(ngrok_bp)
 
 # Route untuk serve file di folder uploads
 @app.route('/uploads/<path:filename>')

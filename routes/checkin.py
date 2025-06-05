@@ -62,16 +62,14 @@ def checkin():
                 day_num = int(parts[-1])
                 dt = datetime(year, month, day_num)
             col = None
-            # Map specific dates in June 2025 to check-in fields
+            # Map specific dates in June 2025 directly to date_day fields
             if dt.year == 2025 and dt.month == 6:
                 if dt.day == 10:
-                    col = 'checkin_day1'
+                    col = 'date_day1'
                 elif dt.day == 11:
-                    col = 'checkin_day2'
+                    col = 'date_day2'
                 elif dt.day == 12:
-                    col = 'checkin_day3'
-            if col:
-                cur.execute(f"UPDATE users_delegate SET {col} = 1 WHERE id = %s", (delegate_id,))
+                    col = 'date_day3'
         except Exception:
             # If parsing fails or date is outside expected range, do not update any checkin_day
             pass
@@ -85,19 +83,9 @@ def checkin():
             with open(image_path, "wb") as f:
                 f.write(base64.b64decode(image))
 
-        # Determine which date_day column to update
-        date_col = None
-        if col == 'checkin_day1':
-            date_col = 'date_day1'
-        elif col == 'checkin_day2':
-            date_col = 'date_day2'
-        elif col == 'checkin_day3':
-            date_col = 'date_day3'
-
-        # Update users_delegate: set image and date_dayX
-        if date_col:
+        if col:
             cur.execute(
-                f"UPDATE users_delegate SET {date_col} = %s, image = %s WHERE id = %s",
+                f"UPDATE users_delegate SET {col} = %s, image = %s WHERE id = %s",
                 (day, filename, delegate_id)
             )
 
