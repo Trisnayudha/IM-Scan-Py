@@ -44,7 +44,7 @@ def scan_qr():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT p.id AS payment_id, u.name, u.job_title, u.company_name, et.title, et.type
+            SELECT p.id AS payment_id, u.name, u.job_title, u.company_name, et.category, et.title, et.type
             FROM payment p
             JOIN users u ON u.id = p.users_id
             JOIN events_tickets et ON et.id = p.package_id
@@ -52,7 +52,24 @@ def scan_qr():
         """, (code_payment,))
         row = cur.fetchone()
         if row:
-            payment_id, name, job_title, company, title, type_val = row
+            payment_id, name, job_title, company, category, title, type_val = row
+            # Validate ticket category against the check-in day
+            if col:
+                if dt.day == 10 and category not in ('Day 1 Access', 'All Access'):
+                    return jsonify({
+                        "status": 0,
+                        "message": "Oops! Your ticket only grants Day 1 Access. You cannot check in today."
+                    }), 403
+                if dt.day == 11 and category not in ('Day 2 Access', 'All Access'):
+                    return jsonify({
+                        "status": 0,
+                        "message": "Oops! Your ticket only grants Day 2 Access. You cannot check in today."
+                    }), 403
+                if dt.day == 12 and category not in ('Day 3 Access', 'All Access'):
+                    return jsonify({
+                        "status": 0,
+                        "message": "Oops! Your ticket only grants Day 3 Access. You cannot check in today."
+                    }), 403
             # Fetch image associated with this payment_id
             cur.execute("SELECT image FROM users_delegate WHERE payment_id = %s", (payment_id,))
             img_row = cur.fetchone()
