@@ -71,11 +71,6 @@ def scan_qr():
                                     "status": 0,
                                     "message": f"Your ticket grants Day {access_day} Access. See you on {month_name} {correct_day} for Indonesia Miner 2025!"
                                 }), 403
-                    # If category isn't All Access or Day X, treat as invalid for any day
-                    return jsonify({
-                        "status": 0,
-                        "message": "Your ticket is not valid for check-in today."
-                    }), 403
             # Fetch image associated with this payment_id
             cur.execute("SELECT image FROM users_delegate WHERE payment_id = %s", (payment_id,))
             img_row = cur.fetchone()
