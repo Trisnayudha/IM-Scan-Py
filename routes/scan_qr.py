@@ -74,6 +74,12 @@ def scan_qr():
             cur.execute("SELECT image FROM users_delegate WHERE payment_id = %s", (payment_id,))
             img_row = cur.fetchone()
             image = img_row[0] if img_row else None
+            if image:
+                # Build full URL using the host URL; strip trailing slash to avoid duplication
+                base_url = request.host_url.rstrip('/')
+                image_url = f"{base_url}/{image}"
+            else:
+                image_url = None
             # Update check-in timestamp for the delegate in the users_delegate table
             if col:
                 update_query = f"UPDATE users_delegate SET {col} = NOW() WHERE payment_id = %s"
@@ -92,7 +98,7 @@ def scan_qr():
                     "checkin_field": col,
                     "ticket_type": ticket_label,
                     "ticket_color": ticket_color,
-                    "image": image
+                    "image": image_url
                 }
             })
         else:
