@@ -77,7 +77,7 @@ def scan_qr():
             if image:
                 # Build full URL using the host URL; strip trailing slash to avoid duplication
                 base_url = request.host_url.rstrip('/')
-                image_url = f"{base_url}/{image}"
+                image_url = f"{base_url}/uploads/{image}"
             else:
                 image_url = None
             # Update check-in timestamp for the delegate in the users_delegate table
