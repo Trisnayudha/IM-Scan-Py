@@ -18,8 +18,10 @@ def list_delegate():
             FROM payment p
             JOIN users u ON u.id = p.users_id
             JOIN events_tickets et ON et.id = p.package_id
-            WHERE (u.name LIKE %s OR u.company_name LIKE %s) AND p.aproval_quota_users = 1 AND p.events_id = 13
-            LIMIT 20
+            WHERE (u.name LIKE %s OR u.company_name LIKE %s) AND p.aproval_quota_users = 1 
+            AND p.events_id = 13 AND p.status NOT IN ('trash', 'Waiting', 'cancelled')
+            ORDER BY (CASE WHEN u.name NOT LIKE '% %' THEN 0 ELSE 1 END), u.name
+            LIMIT 5
         """, (like_pattern, like_pattern))
         rows = cur.fetchall()
         conn.close()
