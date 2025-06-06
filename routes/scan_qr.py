@@ -49,7 +49,7 @@ def scan_qr():
             JOIN users u ON u.id = p.users_id
             JOIN events_tickets et ON et.id = p.package_id
             WHERE p.code_payment = %s
-              AND p.approval_quota_users = 1
+              AND p.aproval_quota_users = 1
               AND p.status NOT IN ('trash', 'Waiting', 'cancelled')
         """, (code_payment,))
         row = cur.fetchone()
