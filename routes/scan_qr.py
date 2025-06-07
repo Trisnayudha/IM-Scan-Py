@@ -91,17 +91,18 @@ def scan_qr():
                 update_query = f"UPDATE users_delegate SET {col} = NOW() WHERE payment_id = %s"
                 cur.execute(update_query, (payment_id,))
                 conn.commit()
+                
                 # Nusa Gateway integration: send WhatsApp notification for Speaker/Delegate Speaker
-                if title in ['Speaker Pass', 'Delegate Speaker']:
+                if type_val and type_val.strip().lower() in ['speaker']:
                     time_checkin = datetime.now().strftime('%H:%M')
                     api_url = "https://nusagateway.com/api/send-message.php"
                     payload = {
                         "token": NUSA_GATEWAY_TOKEN,
                         "phone": "120363389769846913",
-                        "message": f"✅ Tim, {name} telah melakukan check-in sebagai speaker di Lobby Utama The Westin Jakarta 🏨 pada pukul {time_checkin} WIB hari ini."
+                        "message": f"✅ Team, *{name}* dari {company} melakukan check-in sebagai {type_val} di Lobby Utama The Westin Jakarta 🏨 pada pukul {time_checkin} WIB hari ini."
                     }
                     try:
-                        response = requests.post(api_url, json=payload)
+                        response = requests.post(api_url, data=payload)
                         response.raise_for_status()
                     except requests.exceptions.RequestException as err:
                         print(f"Failed to send WhatsApp notification: {err}")
