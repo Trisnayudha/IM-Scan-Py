@@ -84,10 +84,16 @@ def checkin():
                 f.write(base64.b64decode(image))
 
         if col:
-            cur.execute(
-                f"UPDATE users_delegate SET {col} = %s, image = %s WHERE id = %s",
-                (day, filename, delegate_id)
-            )
+            if filename:
+                cur.execute(
+                    f"UPDATE users_delegate SET {col} = %s, image = %s WHERE id = %s",
+                    (day, filename, delegate_id)
+                )
+            else:
+                cur.execute(
+                    f"UPDATE users_delegate SET {col} = %s WHERE id = %s",
+                    (day, delegate_id)
+                )
 
         conn.commit()
 
