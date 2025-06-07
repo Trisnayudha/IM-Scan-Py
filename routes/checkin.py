@@ -98,7 +98,7 @@ def checkin():
         # Update users table with name, job, and company
         cur.execute("""
             UPDATE users
-            SET name = %s, job_title = %s, company = %s
+            SET name = %s, job_title = %s, company_name = %s
             WHERE id = (SELECT users_id FROM users_delegate WHERE id = %s)
         """, (name, job, company, delegate_id))
 
