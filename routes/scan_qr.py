@@ -4,7 +4,8 @@ from utils.ticket_mapper import map_ticket_type
 from datetime import datetime
 from extensions import get_db_connection
 import requests
-from config import NUSA_GATEWAY_TOKEN
+from config import Config
+NUSA_GATEWAY_TOKEN = Config.NUSA_GATEWAY_TOKEN
 
 scan_qr_bp = Blueprint('scan_qr', __name__)
 
