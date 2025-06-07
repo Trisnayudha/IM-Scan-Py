@@ -5,6 +5,7 @@ from datetime import datetime
 from extensions import get_db_connection
 import requests
 from config import Config
+from pytz import timezone
 NUSA_GATEWAY_TOKEN = Config.NUSA_GATEWAY_TOKEN
 
 scan_qr_bp = Blueprint('scan_qr', __name__)
@@ -94,7 +95,8 @@ def scan_qr():
                 
                 # Nusa Gateway integration: send WhatsApp notification for Speaker/Delegate Speaker
                 if type_val and type_val.strip().lower() in ['speaker']:
-                    time_checkin = datetime.now().strftime('%H:%M')
+                    jakarta_time = datetime.now(timezone('Asia/Jakarta'))
+                    time_checkin = jakarta_time.strftime('%H:%M')
                     api_url = "https://nusagateway.com/api/send-message.php"
                     payload = {
                         "token": NUSA_GATEWAY_TOKEN,
