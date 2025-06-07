@@ -3,6 +3,8 @@ from flask import Blueprint, request, jsonify
 from utils.ticket_mapper import map_ticket_type
 from datetime import datetime
 from extensions import get_db_connection
+import requests
+from config import NUSA_GATEWAY_TOKEN
 
 scan_qr_bp = Blueprint('scan_qr', __name__)
 
@@ -88,6 +90,20 @@ def scan_qr():
                 update_query = f"UPDATE users_delegate SET {col} = NOW() WHERE payment_id = %s"
                 cur.execute(update_query, (payment_id,))
                 conn.commit()
+                # Nusa Gateway integration: send WhatsApp notification for Speaker/Delegate Speaker
+                if category in ['Speaker', 'Delegate Speaker']:
+                    time_checkin = datetime.now().strftime('%H:%M')
+                    api_url = "https://nusagateway.com/api/send-message.php"
+                    payload = {
+                        "token": NUSA_GATEWAY_TOKEN,
+                        "phone": "120363389769846913",
+                        "message": f"✅ Tim, {name} telah melakukan check-in sebagai speaker di Lobby Utama The Westin Jakarta 🏨 pada pukul {time_checkin} WIB hari ini."
+                    }
+                    try:
+                        response = requests.post(api_url, json=payload)
+                        response.raise_for_status()
+                    except requests.exceptions.RequestException as err:
+                        print(f"Failed to send WhatsApp notification: {err}")
             conn.close()
             ticket_label, ticket_color = map_ticket_type(type_val, title)
             return jsonify({
