@@ -92,7 +92,7 @@ def scan_qr():
                 cur.execute(update_query, (payment_id,))
                 conn.commit()
                 # Nusa Gateway integration: send WhatsApp notification for Speaker/Delegate Speaker
-                if category in ['Speaker', 'Delegate Speaker']:
+                if title in ['Speaker', 'Delegate Speaker']:
                     time_checkin = datetime.now().strftime('%H:%M')
                     api_url = "https://nusagateway.com/api/send-message.php"
                     payload = {
